@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D5 · Context Management &amp; Reliability (15%) — CCAR-F Deep Dive</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+<header class="hero">
+  <h1>Domain 5 · Context Management &amp; Reliability</h1>
+  <p class="sub">15% of the exam. Four subtopics: preserving critical information, escalation &amp; ambiguity, error propagation across agents, large-codebase exploration.</p>
+  <span class="badge">5.1 Preserve facts</span><span class="badge">5.2 Escalation</span><span class="badge">5.3 Error propagation</span><span class="badge">5.4 Codebase exploration</span>
+</header>
+<a class="back" href="d4.html">← D4</a> · <a class="back" href="index.html">Overview ↑</a>
+
+<section>
+<h4><span class="num">5.1</span> Preserve critical information across long interactions</h4>
+<p><b>What it means.</b> Long conversations leak facts. Three mechanisms: summarization launders specifics into vagueness; "lost in the middle" drops content buried mid-context; and tool results accumulate at full verbosity even when 5 of 40 fields matter.</p>
+<ul>
+  <li><b>Case-facts block:</b> extract transactional facts (amounts, dates, order numbers, statuses) into a persistent block included in every prompt — <i>outside</i> the summarized history. Numbers never survive summarization reliably; keep them verbatim.</li>
+  <li><b class="trap">Lost in the middle:</b> models use the beginning and end of long inputs reliably; mid-input findings get dropped. Mitigate: key-findings summary at the top, explicit section headers, critical items restated at the end.</li>
+  <li><b>Trim tool outputs</b> to relevant fields before they enter context — an order lookup returning 40 fields when 5 are needed eats tokens out of proportion to value.</li>
+  <li>Multi-issue sessions: persist structured issue data (IDs, amounts, statuses) in a separate layer.</li>
+  <li>Subagents must return <b>metadata</b> (dates, source locations, methodology) — not bare prose — so downstream synthesis stays attributable.</li>
+  <li>Upstream agents with limited downstream budgets: return structured data (key facts, citations, relevance scores), not verbose reasoning chains.</li>
+</ul>
+<div class="repo"><b>In this repo:</b> the drift incident (memory/2026-09-22.md) is the cautionary tale — a mental summary ("running all night") destroyed the timestamps and cost the agent ~12 hours of clock error. The standing fix is the case-facts pattern: trust only the timestamped envelope, and <code>date -u</code> before judging. Daily notes keep numbers verbatim for exactly this reason.</div>
+</section>
+
+<section>
+<h4><span class="num">5.2</span> Escalation &amp; ambiguity resolution</h4>
+<p><b>What it means.</b> Knowing when an agent must hand off to a human — defined by triggers, not vibes.</p>
+<ul>
+  <li><b>Legitimate triggers:</b> the customer explicitly asks for a human; policy is ambiguous or silent on the request (e.g., competitor price-match when policy only covers own-site); no meaningful progress is possible.</li>
+  <li><b class="trap">Illegitimate triggers:</b> sentiment analysis and self-reported confidence scores — both unreliable proxies for actual complexity.</li>
+  <li><b>Explicit human request:</b> escalate immediately. Don't investigate first. (Offer-to-resolve is for cases the agent can genuinely handle — and only if the customer accepts; reiterate and you escalate.)</li>
+  <li><b>Multiple customer matches:</b> ask for additional identifiers. Never pick by heuristic — wrong-account actions are worse than one more question.</li>
+  <li>Encode escalation criteria in the system prompt with few-shot examples of escalate vs resolve.</li>
+</ul>
+<div class="repo"><b>In this repo:</b> the digest-outage report rule is the same discipline: standing owner fixes (dead API keys, billing) get reported <b>once per outage, repeated only on change</b> — explicit triggers, no sentiment-driven spamming of the channel.</div>
+</section>
+
+<section>
+<h4><span class="num">5.3</span> Error propagation across multi-agent systems</h4>
+<p><b>What it means.</b> How failures travel from subagent to coordinator — and what the coordinator needs to recover.</p>
+<ul>
+  <li><b>Structured error context:</b> failure type + what was attempted + partial results + alternatives considered. That's what enables intelligent coordinator recovery — "search unavailable" tells it nothing.</li>
+  <li><b>Access failure ≠ valid empty result</b> (again — they really test this): timeouts need retry decisions; empty matches are successful queries. Conflating them produces phantom "no data" conclusions.</li>
+  <li><b class="trap">Both extremes are anti-patterns:</b> silently swallowing errors (returning empty as success) and terminating the entire workflow on a single subagent failure.</li>
+  <li><b>Local first:</b> subagents handle their own transient failures; only unresolvable errors propagate upward — with partial results and the attempt log.</li>
+  <li><b>Coverage annotations:</b> synthesis output should mark which findings are well-supported vs which topic areas have gaps due to unavailable sources.</li>
+</ul>
+<div class="repo"><b>In this repo:</b> the recovery skill's failure table does this end-to-end: 400 / 429 / 402 / memory-failure each carry their type, their fix path, and their owner. Partial results (the 10-video list from discovery) survive even when summarization dies — degraded delivery over all-or-nothing.</div>
+</section>
+
+<section>
+<h4><span class="num">5.4</span> Context management in large codebase exploration</h4>
+<p><b>What it means.</b> Extended exploration sessions degrade — the model starts referencing "typical patterns" instead of the specific classes it found earlier. Manage the boundary deliberately.</p>
+<ul>
+  <li><b>Scratchpad files</b> persist key findings across context boundaries — the durable memory of a long exploration.</li>
+  <li><b>Subagent delegation</b> for verbose discovery ("find all test files", "trace refund flow dependencies") — main agent keeps only high-level understanding and stays fresh.</li>
+  <li><b>Crash recovery:</b> each agent exports state to a known location; the coordinator loads a manifest on resume — structured state persistence, not hope.</li>
+</ul>
+<div class="repo"><b>In this repo:</b> daily notes + the digest ledger are exactly this pattern: every automation writes state (last run, sent IDs) to disk, so any future session — after any restart — resumes from facts, not memory. It's why "the digest already went out today" survives reboots.</div>
+<div class="take"><b>Domain takeaway:</b> facts live in persistent blocks and files, not summaries; escalations fire on explicit triggers; errors travel with context; and exploration writes its findings down as it goes.</div>
+</section>
+
+<footer>CCAR-F deep dive · grounded in workspace repo work · 2026-09-26</footer>
+</div>
+</body>
+</html>

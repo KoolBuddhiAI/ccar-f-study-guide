@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D1 · Agentic Architecture &amp; Orchestration (27%) — CCAR-F Deep Dive</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+<header class="hero">
+  <h1>Domain 1 · Agentic Architecture &amp; Orchestration</h1>
+  <p class="sub">27% of the exam — the heaviest domain. Five subtopics: the loop, multi-agent orchestration, subagent mechanics, enforcement &amp; handoffs, SDK hooks.</p>
+  <span class="badge">1.1 The agentic loop</span><span class="badge">1.2 Coordinator–subagent</span><span class="badge">1.3 Spawning &amp; context</span><span class="badge">1.4 Enforcement &amp; handoff</span><span class="badge">1.5 SDK hooks</span>
+</header>
+<a class="back" href="index.html">← Overview</a>
+
+<section>
+<h4><span class="num">1.1</span> The agentic loop — the one thing to know cold</h4>
+<p><b>What it means.</b> An agentic loop is: send a request → Claude responds → inspect <code>stop_reason</code>. If it's <code>tool_use</code>, execute the requested tool, <b>append the result to the conversation history</b>, and send the next request. If it's <code>end_turn</code>, the task is done. The model decides what to call next based on accumulated context — that's what makes it an agent rather than a pre-scripted chain.</p>
+<ul>
+  <li><b>Model-driven vs preconfigured:</b> Claude choosing tools from context beats fixed decision trees or tool sequences. The exam tests that you know the difference.</li>
+  <li><b class="trap">Tested anti-patterns:</b> scanning assistant text for "done"/"task complete" as a stop signal; setting an arbitrary iteration cap as the <i>primary</i> stopping mechanism; ending the loop on any tool error; checking for assistant text content as a completion indicator.</li>
+  <li>Tool results must land <b>in the history</b> between iterations — otherwise the model can't incorporate new information.</li>
+</ul>
+<div class="repo"><b>In this repo:</b> the session that built this guide ran the loop live — search → read → fetch → write, each result appended before the next decision, stopping only on final text. The transcript is the specimen.</div>
+</section>
+
+<section>
+<h4><span class="num">1.2</span> Coordinator–subagent (hub-and-spoke)</h4>
+<p><b>What it means.</b> One coordinator agent owns everything: decomposing the task, spawning subagents, routing all information between them, handling their errors, and aggregating results. Subagents never talk to each other directly — spokes through the hub, for observability and consistent error handling.</p>
+<ul>
+  <li><b>Dynamic selection:</b> a good coordinator analyzes the query and invokes only the subagents it needs — not always the full pipeline.</li>
+  <li><b>Partition to avoid duplication:</b> assign each subagent distinct subtopics or source types.</li>
+  <li><b class="trap">Over-decomposition trap:</b> slicing the task too narrowly leaves broad research topics under-covered.</li>
+  <li><b>Iterative refinement:</b> the coordinator evaluates the synthesis for gaps, re-delegates with targeted queries, and re-runs synthesis until coverage is sufficient.</li>
+</ul>
+</section>
+
+<section>
+<h4><span class="num">1.3</span> Subagent invocation, context passing, spawning</h4>
+<p><b>What it means.</b> Subagents start <b>blank</b>. They don't inherit the coordinator's conversation, and there's no shared memory between invocations — everything they need must be in the prompt you spawn them with.</p>
+<ul>
+  <li>The <code>Task</code> tool spawns subagents; the coordinator's <code>allowedTools</code> must include <code>"Task"</code> or it can't delegate at all.</li>
+  <li><b>Pass complete prior findings</b> in the prompt — e.g., web-search results and document analysis handed to the synthesis subagent.</li>
+  <li>Use <b>structured formats</b> that separate content from metadata (source URLs, doc names, page numbers) to preserve attribution between agents.</li>
+  <li><b>Parallelism:</b> emit multiple Task calls in <b>one coordinator response</b>, not spread across turns.</li>
+  <li>Write coordinator prompts as <b>goals + quality criteria</b>, not step-by-step procedures — it lets subagents adapt.</li>
+  <li><code>AgentDefinition</code> config covers each subagent type's description, system prompt, and tool restrictions; fork-based sessions explore divergent approaches from a shared baseline.</li>
+</ul>
+<div class="repo"><b>In this repo:</b> the agent's <code>sessions_spawn</code> is this exact API — <code>context="isolated"</code> starts clean, <code>context="fork"</code> copies the transcript, and the task must be fully self-contained either way. The child sees nothing implicit.</div>
+</section>
+
+<section>
+<h4><span class="num">1.4</span> Enforcement &amp; handoff patterns</h4>
+<p><b>What it means.</b> When ordering <i>must</i> happen (identity verified before a refund), enforce it in code — prerequisite gates and hooks. Prompt instructions alone have a non-zero failure rate; deterministic compliance needs deterministic mechanisms.</p>
+<ul>
+  <li>Programmatic gate example: block <code>process_refund</code> until <code>get_customer</code> has returned a verified customer ID.</li>
+  <li><b>Structured handoffs:</b> when escalating to a human who can't see the transcript, compile a summary — customer ID, root cause, amounts, recommended action. Free-text "please help" loses the case.</li>
+  <li>Multi-concern requests: decompose into distinct items, investigate in parallel with shared context, synthesize one resolution.</li>
+</ul>
+<div class="repo"><b>In this repo:</b> <span class="path">digest.py</span> gates its pipeline in code: <code>check_quota()</code> (l.93) blocks before any API spend, and the <code>sent_video_ids</code> ledger makes re-delivery structurally impossible. The recovery skill §3a demands three preconditions <i>before</i> a force-run — gate first, act second.</div>
+</section>
+
+<section>
+<h4><span class="num">1.5</span> Agent SDK hooks — interception &amp; normalization</h4>
+<p><b>What it means.</b> The Agent SDK exposes hook points around the tool lifecycle — e.g., <code>PostToolUse</code> — where your code can intercept a tool call, inspect it, and normalize the data before it re-enters the model's context (trim it, reformat it, redact it).</p>
+<ul>
+  <li>Know the pattern names: hooks intercept; normalization reshapes tool output into the form the model consumes best.</li>
+  <li>This is the programmatic counterpart to 1.4 — enforcement implemented at the SDK layer rather than hoped for in prompts.</li>
+</ul>
+<div class="take"><b>Domain takeaway:</b> the loop terminates on <code>stop_reason</code>, never on words or counters. Subagents are blank slates — the coordinator's real job is packaging context. Deterministic requirements get code, not prose.</div>
+</section>
+
+<a class="back" href="d2.html">Next: Domain 2 · Tool Design &amp; MCP →</a>
+<footer>CCAR-F deep dive · grounded in workspace repo work · 2026-09-26</footer>
+</div>
+</body>
+</html>

@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D4 · Prompt Engineering &amp; Structured Output (20%) — CCAR-F Deep Dive</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+<header class="hero">
+  <h1>Domain 4 · Prompt Engineering &amp; Structured Output</h1>
+  <p class="sub">20% of the exam. Six subtopics: explicit criteria, few-shot examples, schemas via tool use, validation &amp; retry loops, batch processing, multi-instance review.</p>
+  <span class="badge">4.1 Criteria</span><span class="badge">4.2 Few-shot</span><span class="badge">4.3 JSON schemas</span><span class="badge">4.4 Retry loops</span><span class="badge">4.5 Batches</span><span class="badge">4.6 Multi-instance</span>
+</header>
+<a class="back" href="d3.html">← D3</a> · <a class="back" href="d5.html">D5 →</a>
+
+<section>
+<h4><span class="num">4.1</span> Explicit criteria to improve precision</h4>
+<p><b>What it means.</b> Vague instructions produce vague precision. "Check that comments are accurate" can't be applied consistently; "flag a comment only when its claimed behavior contradicts the actual code" can — it's a categorical test, not a judgment call.</p>
+<ul>
+  <li><b class="trap">"Be conservative" and "only report high-confidence findings" measurably fail</b> to improve precision — they're not criteria, they're moods.</li>
+  <li>Define what to report (bugs, security) and what to skip (minor style, local patterns) — category-based filtering, not confidence-based.</li>
+  <li>False positives aren't free: high-FP categories destroy developer trust in the accurate ones. Remediation: temporarily disable the noisy category while you fix its prompt.</li>
+  <li>Severity levels need concrete code examples per level, or classification drifts.</li>
+</ul>
+<div class="repo"><b>In this repo:</b> the agent's own reply rules are categorical for exactly this reason — quiet when 23:00–08:00, when last check &lt; 30 min ago, when nothing is new; speak when an event is &lt; 2h away. Auditable conditions, not "be thoughtful."</div>
+</section>
+
+<section>
+<h4><span class="num">4.2</span> Few-shot prompting</h4>
+<p><b>What it means.</b> 2–4 targeted examples — the most effective technique for consistent, well-formatted output when instructions alone drift.</p>
+<ul>
+  <li>Show <b>ambiguous cases</b> and the reasoning for why one action beat a plausible alternative — that's how judgment generalizes to novel patterns instead of matching only pre-listed cases.</li>
+  <li>Demonstrate the exact output format (location, issue, severity, suggested fix) to lock consistency.</li>
+  <li>Include examples of <b>acceptable patterns vs genuine issues</b> to cut false positives without losing generalization.</li>
+  <li>For extraction: examples across varied document structures (inline citations vs bibliographies) reduce hallucination and empty-field problems.</li>
+</ul>
+</section>
+
+<section>
+<h4><span class="num">4.3</span> Structured output via tool use &amp; JSON schemas</h4>
+<p><b>What it means.</b> The most reliable structured output isn't prompt text — it's <b>defining an extraction tool whose input is a JSON schema</b>, then reading the data out of the <code>tool_use</code> response. Syntax errors become impossible.</p>
+<ul>
+  <li><b>tool_choice recall:</b> <code>auto</code> (model may answer in text), <code>any</code> (must call some tool — use when multiple schemas exist and document type is unknown), forced <code>{"type":"tool"}</code> (must call the named tool — use to guarantee a first extraction step).</li>
+  <li><b class="trap">Strict schemas kill syntax errors, not semantic ones:</b> line items that don't sum to the stated total, or values in wrong fields, pass schema validation. Semantics need validation logic (→ 4.4).</li>
+  <li><b>Schema design:</b> make fields optional/nullable when the source may not contain them — required fields invite fabrication. Add enums like <code>"unclear"</code> for ambiguity and <code>"other"</code> + a detail string for extensible categories.</li>
+  <li>Pair schemas with format-normalization prompt rules for messy sources.</li>
+</ul>
+<div class="repo"><b>In this repo:</b> parallel research subagents return results through an <code>outputSchema</code> (JSON Schema) — merged programmatically, never parsed out of prose. The automations payloads are typed JSON for the same reason.</div>
+</section>
+
+<section>
+<h4><span class="num">4.4</span> Validation, retry, and feedback loops</h4>
+<p><b>What it means.</b> When output fails validation, retry <i>with the error attached</i>: original document + the failed extraction + the specific validation errors. Targeted self-correction beats blind re-asks.</p>
+<ul>
+  <li><b class="trap">Retries cannot create missing information.</b> If the fact isn't in the source document (it lives in an external doc you didn't provide), no retry count will ever fix it — recognize that class early.</li>
+  <li>Separate <b>semantic validation</b> (sums wrong, field misplaced) from schema syntax errors (already eliminated by tool use).</li>
+  <li>Track which construct triggered each finding (<code>detected_pattern</code> field) — when humans dismiss findings, that field turns dismissals into a dataset for systematic false-positive analysis.</li>
+  <li>Self-check patterns: extract <code>calculated_total</code> alongside <code>stated_total</code>; flag mismatches; add <code>conflict_detected</code> booleans for inconsistent sources.</li>
+</ul>
+</section>
+
+<section>
+<h4><span class="num">4.5</span> Batch processing strategies</h4>
+<p><b>What it means.</b> The Message Batches API trades latency for cost — know the numbers and the constraints.</p>
+<ul>
+  <li><b>Numbers:</b> 50% cost reduction; up to 24-hour processing window; <b>no latency SLA</b>; up to 100K requests per batch (cap may evolve — check current docs).</li>
+  <li><b class="trap">No tool use inside a batch request</b> — you can't execute tools mid-request and feed results back. Batches are for self-contained calls.</li>
+  <li><b>Workload fit:</b> overnight reports, weekly audits, nightly test generation — yes. Blocking pre-merge checks — no, those need synchronous.</li>
+  <li>Window math: e.g., submit every 4 hours to guarantee a 30-hour SLA against the 24-hour batch window.</li>
+  <li><code>custom_id</code> correlates request/response pairs — on failure, resubmit <i>only</i> failed documents (chunk the ones that blew context limits).</li>
+  <li>Refine the prompt on a small sample first; first-pass success rate is worth more than resubmission heroics.</li>
+</ul>
+</section>
+
+<section>
+<h4><span class="num">4.6</span> Multi-instance &amp; multi-pass review</h4>
+<p><b>What it means.</b> Review quality comes from independence and focus, not more thinking in the same session.</p>
+<ul>
+  <li><b class="trap">Self-review is structurally weak:</b> a model that generated code carries its reasoning context — it's less likely to question its own decisions. A second, independent instance (no prior context) catches subtle issues better than self-review instructions or extended thinking.</li>
+  <li><b>Multi-pass:</b> split large reviews into per-file local passes + cross-file integration passes (data flow, API consistency). One giant pass dilutes attention and breeds contradictory findings.</li>
+  <li>Verification passes: self-reported confidence per finding enables calibrated routing (high-confidence → auto-fix, low → human review).</li>
+</ul>
+<div class="repo"><b>In this repo:</b> the guide you're reading got a second pass from a fresh session after a gateway restart killed the first — and the fresh instance immediately caught what the interrupted one couldn't verify. Independence isn't theoretical here.</div>
+<div class="take"><b>Domain takeaway:</b> criteria not moods; examples not adjectives; schemas not prose; retries only when the information exists; independence over introspection.</div>
+</section>
+
+<footer>CCAR-F deep dive · grounded in workspace repo work · 2026-09-26</footer>
+</div>
+</body>
+</html>

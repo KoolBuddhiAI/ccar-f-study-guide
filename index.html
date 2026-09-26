@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CCAR-F Study Guide · overview + deep dives</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>Claude Certified Architect – Foundations<br>(CCAR-F / CCA-F)</h1>
+  <p class="sub">Study guide grounded in this repo's real code. Start with the overview below, then open each domain's deep-dive page — every subtopic explained in plain language with repo examples.</p>
+  <span class="badge">5 domains</span><span class="badge">26 subtopics</span><span class="badge">60 items · 120 min</span><span class="badge">$125 · pass 720/1000</span><span class="badge">valid 12 months</span>
+  <table class="facts" style="width:100%;border-collapse:collapse;font-size:.92rem;margin-top:8px">
+    <tr><td>Role / level</td><td>Anthropic Architect track, Foundations</td></tr>
+    <tr><td>Format</td><td>4 scenarios from a bank of 6; multiple-choice <b>and</b> multiple-response</td></tr>
+    <tr><td>Delivery</td><td>Proctored — Pearson VUE online (OnVUE) or test center</td></tr>
+    <tr><td>Renewal</td><td>Free non-proctored assessment on Anthropic Partner Academy</td></tr>
+    <tr><td>Prereq (informal)</td><td>6+ months building with Claude APIs, Agent SDK, Claude Code, MCP</td></tr>
+    <tr><td>Official prep</td><td>Anthropic Partner Academy (anthropic-partners.skilljar.com)</td></tr>
+  </table>
+  <p class="note" style="margin-top:10px">Facts cross-confirmed by two independent prep sites aligned to official Exam Guide v1.0 (checked 2026-09-18); the official PDF itself wouldn't fetch. High confidence — verify when booking.</p>
+</header>
+
+<nav class="toc">
+  <a href="d1.html">D1 · Agentic Architecture<small>27% · the loop, subagents, gates · 5 topics →</small></a>
+  <a href="d3.html">D3 · Claude Code Config<small>20% · CLAUDE.md, skills, CI · 6 topics →</small></a>
+  <a href="d2.html">D2 · Tool Design &amp; MCP<small>18% · descriptions, errors, tool_choice · 5 topics →</small></a>
+  <a href="d4.html">D4 · Prompts &amp; Structured Output<small>20% · criteria, schemas, batches · 6 topics →</small></a>
+  <a href="d5.html">D5 · Context &amp; Reliability<small>15% · facts, escalation, recovery · 4 topics →</small></a>
+  <a href="#idx">Repo artifact index<small>where to read the real code</small></a>
+</nav>
+
+<section id="d1">
+  <h2>1 · Agentic Architecture &amp; Orchestration <span class="w">27%</span></h2>
+  <p>The agentic loop (<code>stop_reason</code> lifecycle), tested anti-patterns, coordinator–subagent hub-and-spoke, subagent context mechanics, programmatic enforcement vs prompt guidance, Agent SDK hooks. <a href="d1.html">Deep dive →</a></p>
+  <div class="take"><b>Takeaway:</b> loop on <code>tool_use</code>, stop on <code>end_turn</code> — never on words or counters. Gates belong in code; hints belong in prompts.</div>
+</section>
+
+<section id="d3">
+  <h2>2 · Claude Code Config &amp; Workflows <span class="w">20%</span></h2>
+  <p>CLAUDE.md hierarchy and scoping, @import and rules directories, slash commands, SKILL.md frontmatter (<code>context: fork</code>, <code>allowed-tools</code>), path-scoped rules, plan mode vs direct execution, iterative refinement, CI/CD integration. <a href="d3.html">Deep dive →</a></p>
+  <div class="take"><b>Takeaway:</b> configuration is layered by scope; skills are procedures with triggers, not always-loaded documents.</div>
+</section>
+
+<section id="d2">
+  <h2>3 · Tool Design &amp; MCP Integration <span class="w">18%</span></h2>
+  <p>Descriptions as the selection mechanism, tool splitting/renaming, structured error responses (errorCategory, isRetryable, access-failure vs empty-result), tool distribution and <code>tool_choice</code> modes, MCP server scoping and resources, built-in tools (Grep/Glob/Read/Write/Edit). <a href="d2.html">Deep dive →</a></p>
+  <div class="take"><b>Takeaway:</b> a tool's job on failure isn't to hide the error — it's to report it usefully so the agent can choose the next move.</div>
+</section>
+
+<section id="d4">
+  <h2>4 · Prompt Engineering &amp; Structured Output <span class="w">20%</span></h2>
+  <p>Categorical criteria vs "be conservative", few-shot for ambiguous cases, JSON schemas via tool use (strict ≠ semantically valid), retry-with-error-feedback, the Message Batches API (50% cost, 24h window, no mid-request tools), independent multi-instance review. <a href="d4.html">Deep dive →</a></p>
+  <div class="take"><b>Takeaway:</b> criteria not moods; examples not adjectives; schemas not prose; retries only when the information exists.</div>
+</section>
+
+<section id="d5">
+  <h2>5 · Context Management &amp; Reliability <span class="w">15%</span></h2>
+  <p>Case-facts blocks vs summarized history, lost-in-the-middle, trimming tool outputs, escalation triggers (and non-triggers), structured error propagation, scratchpads and crash-recovery state for codebase exploration. <a href="d5.html">Deep dive →</a></p>
+  <div class="take"><b>Takeaway:</b> context is a budget and a liability — facts at the edges, numbers verbatim, never trust a summary of something you can check.</div>
+</section>
+
+<section id="idx">
+  <h2>Repo artifact index — go read the code</h2>
+  <ul>
+    <li><code class="path">skills/youtube-digest/scripts/digest.py</code> — pipeline; quota gate l.93; error classification l.139–194; idempotent ledger</li>
+    <li><code class="path">skills/youtube-digest/state/</code> — durable state: quota usage, sent-video ledger</li>
+    <li><code class="path">workshop-skills/youtube-digest-recovery/SKILL.md</code> — trigger-first description, failure taxonomy, gates, verification</li>
+    <li><code class="path">workshop-skills/memory-index-recovery/SKILL.md</code> — lock quarantining + rebuild rules</li>
+    <li><code class="path">documentation/youtube-digest/digest/</code> — output format used by the worked-example pattern</li>
+    <li><code class="path">AGENTS.md · SOUL.md · USER.md</code> — layered, scoped, budgeted context files</li>
+    <li><code class="path">memory/*.md</code> — daily logs; numbers verbatim; correction patterns</li>
+  </ul>
+  <h3>Where to prep next</h3>
+  <ul>
+    <li><b>Official:</b> Anthropic Partner Academy — Architect Foundations path (anthropic-partners.skilljar.com)</li>
+    <li><b>Practice:</b> claudecertifiedarchitects.com (400 scenario Qs) · certsafari.com (480 Qs + exam reports) · Matthew Purcell's CCAR-F set</li>
+    <li><b>Book:</b> Pearson VUE — pearsonvue.com/us/en/anthropic.html</li>
+  </ul>
+</section>
+
+<footer>Sources: pearsonvue.com (program), certsafari.com (domain breakdown, guide v1.0 checked 2026-09-18), claudecertifiedarchitects.com (weights).<br>Markdown source: <code>documentation/cca-prep/cca-foundations-guide.md</code> · Deep dives d1–d5.html · Built by the workspace agent, 2026-09-26.</footer>
+
+</div>
+</body>
+</html>

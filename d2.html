@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D2 · Tool Design &amp; MCP Integration (18%) — CCAR-F Deep Dive</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+<header class="hero">
+  <h1>Domain 2 · Tool Design &amp; MCP Integration</h1>
+  <p class="sub">18% of the exam. Anthropic created MCP — expect direct questions. Five subtopics: tool interfaces, structured errors, tool distribution &amp; tool_choice, MCP servers, built-in tools.</p>
+  <span class="badge">2.1 Interfaces</span><span class="badge">2.2 Error responses</span><span class="badge">2.3 Distribution &amp; tool_choice</span><span class="badge">2.4 MCP servers</span><span class="badge">2.5 Built-in tools</span>
+</header>
+<a class="back" href="d1.html">← D1</a> · <a class="back" href="d3.html">D3 →</a>
+
+<section>
+<h4><span class="num">2.1</span> Tool interfaces: descriptions are the selection mechanism</h4>
+<p><b>What it means.</b> The model picks tools by reading descriptions — nothing else. A vague description means unreliable selection; two near-identical descriptions mean misrouting.</p>
+<ul>
+  <li>Good descriptions state: purpose, input format, example queries, edge cases, and when to use this tool vs its neighbors.</li>
+  <li><b class="trap">Classic exam case:</b> <code>analyze_content</code> vs <code>analyze_document</code> with near-identical descriptions — requests get misrouted. Fix: rename to <code>extract_web_results</code> with a web-specific description.</li>
+  <li>Fix by <b>splitting</b> generic tools into purpose-specific ones with defined I/O contracts: <code>analyze_document</code> → <code>extract_data_points</code>, <code>summarize_content</code>, <code>verify_claim_against_source</code>.</li>
+  <li>System-prompt wording interacts with selection: keyword-sensitive instructions create unintended tool associations. Review prompts for that.</li>
+</ul>
+<div class="repo"><b>In this repo:</b> the agent's own toolset models this — every tool leads with what it's for ("Exact single-file replacements", "Fetch URL; extract readable markdown") because selection depends on it.</div>
+</section>
+
+<section>
+<h4><span class="num">2.2</span> Structured error responses for MCP tools</h4>
+<p><b>What it means.</b> When a tool fails, its job is to report the failure in a form the agent can act on. MCP signals this with the <code>isError</code> flag; the payload should classify the error so the model can choose recovery.</p>
+<ul>
+  <li><b>Error classes to memorize:</b> transient (timeouts, unavailable), validation (bad input), business/policy ("refunds over 90 days not allowed"), permission (unauthorized).</li>
+  <li>Return structured metadata: <code>errorCategory</code>, <code>isRetryable</code> boolean, human-readable description. Business-rule violations get <code>retriable: false</code> plus a customer-friendly explanation.</li>
+  <li><b class="trap">Anti-patterns:</b> uniform "Operation failed" responses; logging server-side and returning nothing; silent internal retries that hide the failure; raw exception text with just an isError flag.</li>
+  <li><b>Retryable vs not:</b> returning that distinction prevents wasted retry attempts.</li>
+  <li><b>Access failure ≠ valid empty result:</b> a timeout is a retry decision; "no matches found" is a successful query with zero rows. Conflating them corrupts downstream logic.</li>
+  <li>Subagents: recover transient failures locally; propagate upward only what you can't fix — with partial results and what was attempted.</li>
+</ul>
+<div class="repo"><b>In this repo:</b> <span class="path">digest.py</span> does both halves. <code>check_quota()</code> (l.93) returns <code>(can_proceed, message, units_remaining)</code> — a structured result, not a crash. The provider layer classifies: 429 → backoff + retry; 400 API_KEY_INVALID → clean abort, non-retryable. And the recovery skill's rule "never re-run the job just to test a dead key" exists precisely because retrying a non-retryable error burns quota for nothing.</div>
+</section>
+
+<section>
+<h4><span class="num">2.3</span> Distribute tools across agents &amp; configure tool_choice</h4>
+<p><b>What it means.</b> More tools ≠ more capable. 18 tools where 4–5 would do degrades selection reliability — the decision space gets too big, and agents reach for tools outside their specialty (a synthesis agent trying web searches).</p>
+<ul>
+  <li>Scope each subagent's toolset to its role; allow limited cross-role tools for high-frequency needs (a <code>verify_fact</code> tool for the synthesis agent), routing complex cases through the coordinator.</li>
+  <li>Replace generic tools with constrained ones: <code>fetch_url</code> → <code>load_document</code> that validates document URLs.</li>
+  <li><b>tool_choice options:</b> <code>"auto"</code> (model may answer in text instead), <code>"any"</code> (must call some tool), forced <code>{"type":"tool","name":"..."}</code> (must call that tool). Force a first tool (e.g., <code>extract_metadata</code> before enrichment), then continue in later turns.</li>
+</ul>
+</section>
+
+<section>
+<h4><span class="num">2.4</span> MCP servers in Claude Code &amp; agent workflows</h4>
+<p><b>What it means.</b> MCP servers are configured per scope, discovered at connection time, and their tools are then available simultaneously.</p>
+<ul>
+  <li><b>Scoping:</b> project-level <code>.mcp.json</code> (shared team tooling, version-controlled) vs user-level <code>~/.claude.json</code> (personal/experimental).</li>
+  <li>Env var expansion in <code>.mcp.json</code> — <code>${GITHUB_TOKEN}</code> — keeps credentials out of the committed file.</li>
+  <li><b>MCP resources</b> expose content catalogs (issue summaries, doc hierarchies, DB schemas) so agents see what data exists without exploratory tool calls.</li>
+  <li>Prefer existing community MCP servers for standard integrations (Jira, GitHub); build custom only for team-specific workflows.</li>
+  <li>Enhance MCP tool descriptions so the agent prefers them over weaker built-ins when they're the better tool.</li>
+</ul>
+</section>
+
+<section>
+<h4><span class="num">2.5</span> Built-in tools: Grep vs Glob vs Read/Write/Edit</h4>
+<p><b>What it means.</b> Picking the right built-in is itself testable content.</p>
+<ul>
+  <li><b>Grep</b> searches <i>content</i> (find callers of a function, locate an error string). <b>Glob</b> matches <i>paths</i> (<code>**/*.test.tsx</code>). Don't cross them.</li>
+  <li><b>Edit</b> does targeted replacement on unique anchor text; when the text isn't unique, fall back to <b>Read + Write</b> for reliability.</li>
+  <li>Build understanding incrementally: Grep for entry points → Read to follow imports → trace the flow. Never read all files upfront.</li>
+</ul>
+<div class="repo"><b>In this repo:</b> this guide was built exactly that way — <code>grep -n 'def '</code> on <code>digest.py</code> to map functions, then reading only the quota section, instead of loading all 704 lines.</div>
+<div class="take"><b>Domain takeaway:</b> descriptions drive selection, errors are data for decisions, fewer well-scoped tools beat a big toolbox, and access failures are not empty results.</div>
+</section>
+
+<footer>CCAR-F deep dive · grounded in workspace repo work · 2026-09-26</footer>
+</div>
+</body>
+</html>

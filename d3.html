@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>D3 · Claude Code Config &amp; Workflows (20%) — CCAR-F Deep Dive</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+<header class="hero">
+  <h1>Domain 3 · Claude Code Configuration &amp; Workflows</h1>
+  <p class="sub">20% of the exam. Six subtopics: CLAUDE.md hierarchy, slash commands &amp; skills, path-scoped rules, plan mode vs direct execution, iterative refinement, CI/CD integration.</p>
+  <span class="badge">3.1 CLAUDE.md</span><span class="badge">3.2 Commands &amp; skills</span><span class="badge">3.3 Path rules</span><span class="badge">3.4 Plan mode</span><span class="badge">3.5 Iteration</span><span class="badge">3.6 CI/CD</span>
+</header>
+<a class="back" href="d2.html">← D2</a> · <a class="back" href="d4.html">D4 →</a>
+
+<section>
+<h4><span class="num">3.1</span> CLAUDE.md hierarchy, scoping, modularity</h4>
+<p><b>What it means.</b> Memory files load by proximity and scope: user-level <code>~/.claude/CLAUDE.md</code> (that user only — <b>not</b> shared through version control), project-level (<code>.claude/CLAUDE.md</code> or root), and directory-level files for subdirectory scope.</p>
+<ul>
+  <li><b class="trap">Classic diagnostic:</b> a new teammate "doesn't follow the rules" — because the rules live in someone's user-level file instead of project-level config. Location determines audience.</li>
+  <li><b>@import syntax</b> keeps CLAUDE.md modular — import only the standards file relevant to each package.</li>
+  <li><b>.claude/rules/</b> directory: split a monolith into topic files (testing.md, api-conventions.md, deployment.md).</li>
+  <li><code>/memory</code> command shows which memory files are actually loaded — the first debugging step for inconsistent behavior across sessions.</li>
+</ul>
+<div class="repo"><b>In this repo:</b> same architecture, OpenClaw names — <span class="path">AGENTS.md</span> (workspace rules), <span class="path">SOUL.md</span> (persona), <span class="path">USER.md</span> (single-user profile, 4,000-char budget). Files load by scope with explicit budgets, and the daily-note habit of re-reading startup files mirrors the /memory check.</div>
+</section>
+
+<section>
+<h4><span class="num">3.2</span> Slash commands &amp; skills</h4>
+<p><b>What it means.</b> Commands and skills are packaged workflows: project-scoped in <code>.claude/commands/</code> (shared via VCS) vs user-scoped in <code>~/.claude/commands/</code> (personal). Skills live in <code>.claude/skills/</code> as <code>SKILL.md</code> with frontmatter.</p>
+<ul>
+  <li>Frontmatter options to know: <code>context: fork</code> (run in an isolated sub-agent so verbose or exploratory output never pollutes the main conversation), <code>allowed-tools</code> (restrict what the skill may touch — e.g., file-writes only), <code>argument-hint</code> (prompt for required parameters when invoked without args).</li>
+  <li>Personal variants of team skills go in <code>~/.claude/skills/</code> under different names — don't affect teammates.</li>
+  <li><b>Skills vs CLAUDE.md:</b> skills are on-demand, task-specific workflows; CLAUDE.md is always-loaded universal standards. Choose accordingly.</li>
+</ul>
+<div class="repo"><b>In this repo:</b> two authored skills — <span class="path">workshop-skills/youtube-digest-recovery/SKILL.md</span> and <span class="path">memory-index-recovery/SKILL.md</span>. Both use trigger-first descriptions ("YouTube Daily Digest automation failed — classify provider or memory-index errors…"), lean bodies, and verification criteria. One encodes <code>allowed-tools</code>-style restrictions in prose: "digest.py is operator-owned; never edit it."</div>
+</section>
+
+<section>
+<h4><span class="num">3.3</span> Path-specific rules — conditional loading</h4>
+<p><b>What it means.</b> Rules in <code>.claude/rules/</code> can carry YAML frontmatter with <code>paths:</code> glob patterns; they load only when you're editing matching files — less irrelevant context, fewer tokens.</p>
+<ul>
+  <li>Glob-scoped rules beat directory-level CLAUDE.md when a convention spans directories: <code>**/*.test.tsx</code> catches every test file wherever it lives; <code>terraform/**/*</code> scopes infra rules.</li>
+  <li>Know when to choose path rules vs subdirectory CLAUDE.md — cross-directory conventions are the giveaway.</li>
+</ul>
+<div class="repo"><b>In this repo:</b> the memory system uses the identical trick — repo-scoped facts carry <code>&lt;!-- project: path:… --&gt;</code> markers so project knowledge stays attached to its repo instead of leaking everywhere.</div>
+</section>
+
+<section>
+<h4><span class="num">3.4</span> Plan mode vs direct execution</h4>
+<p><b>What it means.</b> Plan mode is for exploration before commitment: large-scale changes, multiple valid approaches, architectural decisions, multi-file modifications. Direct execution is for simple, well-scoped changes.</p>
+<ul>
+  <li><b>Plan mode when:</b> microservice restructuring, migrations touching 45+ files, choosing between integration approaches with different infra needs.</li>
+  <li><b>Direct when:</b> a single-file bug fix with a clear stack trace, adding one validation conditional.</li>
+  <li>The <b>Explore subagent</b> isolates verbose discovery output and returns summaries — main context stays clean during multi-phase work.</li>
+  <li>Combination pattern: plan the migration, then execute the chosen plan directly.</li>
+</ul>
+<div class="repo"><b>In this repo:</b> the study-guide build ran plan-then-execute: research and inventory first (the "explore" phase — reading exam dumps, mapping the repo), writing only after the structure was decided.</div>
+</section>
+
+<section>
+<h4><span class="num">3.5</span> Iterative refinement techniques</h4>
+<p><b>What it means.</b> How to converge on quality across turns.</p>
+<ul>
+  <li><b>Concrete I/O examples beat prose:</b> when natural-language descriptions produce inconsistent results, 2–3 input/output pairs fix interpretation — the single most effective technique.</li>
+  <li><b>Test-driven iteration:</b> write the test suite first (expected behavior, edge cases, performance), then share failures each round to guide improvement.</li>
+  <li><b>Interview pattern:</b> have Claude ask <i>you</i> questions before implementing in unfamiliar domains — surfaces considerations you didn't anticipate (cache invalidation, failure modes).</li>
+  <li><b>Interacting problems → all issues in one message.</b> Independent problems → fix sequentially.</li>
+  <li>Edge cases: provide specific input/expected-output pairs (e.g., null handling in migration scripts).</li>
+</ul>
+<div class="repo"><b>In this repo:</b> the digest format rule is exactly this — "use the newest existing digest file as the format template" hands the model a concrete exemplar instead of describing the format.</div>
+</section>
+
+<section>
+<h4><span class="num">3.6</span> Claude Code in CI/CD pipelines</h4>
+<p><b>What it means.</b> Running Claude Code as an automated pipeline stage.</p>
+<ul>
+  <li><code>-p</code> / <code>--print</code>: non-interactive mode — prevents hangs waiting for input.</li>
+  <li><code>--output-format json</code> + <code>--json-schema</code>: machine-parseable structured findings, e.g., auto-posted as inline PR comments.</li>
+  <li>CLAUDE.md is how CI-invoked Claude gets project context: testing standards, fixture conventions, review criteria. Also feed existing tests in context so generation doesn't duplicate covered scenarios.</li>
+  <li><b class="trap">Self-review limitation:</b> the session that generated code reviews its own changes poorly — an independent review instance (fresh context) catches more. </li>
+  <li>Re-run reviews with prior findings in context, instructed to report only new or still-unaddressed issues — avoids duplicate comments.</li>
+</ul>
+<div class="take"><b>Domain takeaway:</b> scope decides which file wins; skills package on-demand workflow with isolation options; exploration before commitment; examples and tests drive iteration; and independent reviewers beat self-review.</div>
+</section>
+
+<footer>CCAR-F deep dive · grounded in workspace repo work · 2026-09-26</footer>
+</div>
+</body>
+</html>
