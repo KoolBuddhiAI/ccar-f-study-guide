@@ -21,6 +21,24 @@ Built on the **official exam scenario bank** and the guide's own preparation exe
 
 Markdown version: [practice-lab.md](practice-lab.md)
 
+## Build-to-Learn Portfolio
+
+Ten agent-system projects that solve real company problems *and* exercise what the exam validates — because the exam tests judgement about tradeoffs, and tradeoffs only appear in systems you actually build.
+
+- **Track A — operations:** IT request & licence provisioning · ISO 27001 continuous-evidence agent ⭐ · key & certificate lifecycle · payroll Q&A · people-ops cycles · L&D enablement
+- **Track B — customer-facing:** security-questionnaire / trust-portal concierge · product support resolution
+- **Track C — engineering workflow:** CI review & test generation · contract & vendor-document extraction
+
+Includes a coverage matrix against the blueprint, a minimum path to full coverage (`A2 + C1 + C2 + A1`), and a 4-week build-and-revise rhythm.
+
+[build-to-learn.md](build-to-learn.md)
+
+## M365 Discovery Prompt
+
+A prompt for Claude with Microsoft 365 access to find candidate customer use cases in real communications — explicit categorical criteria, two-citation evidence rule, JSON-schema output, coverage-gap annotations, and tuning lines for retry-with-feedback.
+
+[m365-discovery-prompt.md](m365-discovery-prompt.md)
+
 ## Deep dives by domain
 
 | Page | Domain | Weight |
