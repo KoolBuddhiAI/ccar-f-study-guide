@@ -49,3 +49,16 @@ a{color:var(--acc)}
 footer{color:var(--mut);font-size:.8rem;margin-top:10px;text-align:center}
 .note{font-size:.85rem;color:var(--mut)}
 .trap{color:var(--warn);font-weight:600}
+details.q{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:12px 14px;margin:10px 0}
+details.q>summary{cursor:pointer;font-weight:700;color:var(--acc);list-style:none}
+details.q>summary::-webkit-details-marker{display:none}
+details.q>summary::before{content:"▸ ";font-weight:400}
+details.q[open]>summary::before{content:"▾ "}
+details.q[open]>summary{margin-bottom:8px}
+.qtext{font-weight:600;margin:8px 0}
+.opts{margin:6px 0 6px 4px;padding-left:16px}
+.opts li{margin:4px 0}
+.ans{border-left:4px solid var(--ok);background:color-mix(in srgb,var(--ok) 8%,transparent);border-radius:0 10px 10px 0;padding:10px 12px;margin-top:10px}
+.ans b{color:var(--ok)}
+.chk li{list-style:none;margin:6px 0}
+.chk li::before{content:"☐ ";color:var(--mut)}

@@ -1,0 +1,449 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>CCAR-F Practice Lab · 6 new use cases + official scenario bank</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="wrap">
+
+<header class="hero">
+  <h1>🧪 CCAR-F Practice Lab</h1>
+  <p class="sub">Apply the exam, don't just read it. Six new practice use cases (24 exam-format questions with full reasoning + six build labs), built on the <b>official scenario bank</b> and the guide's own preparation exercises.</p>
+  <span class="badge">official scenario bank</span><span class="badge">24 questions</span><span class="badge">6 build labs</span><span class="badge">tap to reveal answers</span>
+  <p class="note" style="margin-top:10px">Sources: <b>Claude Certified Architect – Foundations Exam Guide v1.0</b> (effective July 2026) — scenarios, exercises and sample questions quoted first-hand from the official guide. Practice cases P1–P6 are new material written by the workspace agent, not endorsed by Anthropic.</p>
+</header>
+
+<nav class="toc">
+  <a href="index.html">← Study guide</a>
+  <a href="#a">A · Official scenarios<small>the 6 the exam draws from</small></a>
+  <a href="#b">B · Official exercises<small>4 hands-on builds</small></a>
+  <a href="#c">C · New practice cases<small>P1–P6 · 24 questions</small></a>
+  <a href="#d">D · Coverage matrix<small>where to drill</small></a>
+  <a href="#e">E · Readiness checklist<small>12 self-checks</small></a>
+</nav>
+
+<section>
+  <h2>How the exam uses scenarios</h2>
+  <table class="facts" style="width:100%;border-collapse:collapse;font-size:.92rem">
+    <tr><td>Items / time</td><td>60 items / 120 minutes</td></tr>
+    <tr><td>Structure</td><td><b>4 scenarios drawn at random from a bank of 6</b></td></tr>
+    <tr><td>Item format</td><td>Multiple-choice <b>and</b> multiple-response (each item says how many to select)</td></tr>
+    <tr><td>Pass mark</td><td>Scaled 720 on a 100–1,000 scale</td></tr>
+    <tr><td>Score report</td><td>Pass/fail + <b>percent-correct by domain</b></td></tr>
+  </table>
+  <div class="take"><b>How to practise here:</b> read a case, answer cold, then tap the question to reveal the reasoning. On the real exam the explanation of <i>why the other options fail</i> is as instructive as the key — that's deliberate, and it's how these are written.</div>
+</section>
+
+<section id="a">
+  <h2>A · The official scenario bank</h2>
+  <p class="note">These are the six production contexts the exam actually frames questions in. Four appear on your sitting.</p>
+
+  <h4><span class="num">1</span> Customer Support Resolution Agent</h4>
+  <p>Agent SDK agent for returns, billing disputes and account issues, using custom MCP tools (<code>get_customer</code>, <code>lookup_order</code>, <code>process_refund</code>, <code>escalate_to_human</code>). Target: 80%+ first-contact resolution while knowing when to escalate.</p>
+  <p class="note"><b>Carries:</b> D1 Agentic Architecture · D2 Tool Design &amp; MCP · D5 Context &amp; Reliability</p>
+
+  <h4><span class="num">2</span> Code Generation with Claude Code</h4>
+  <p>Claude Code for generation, refactoring, debugging and documentation — custom slash commands, CLAUDE.md configuration, and choosing plan mode vs direct execution.</p>
+  <p class="note"><b>Carries:</b> D3 Claude Code Config · D5 Context &amp; Reliability</p>
+
+  <h4><span class="num">3</span> Multi-Agent Research System</h4>
+  <p>A coordinator delegating to search / document-analysis / synthesis / report subagents, producing comprehensive cited reports.</p>
+  <p class="note"><b>Carries:</b> D1 Agentic Architecture · D2 Tool Design &amp; MCP · D5 Context &amp; Reliability</p>
+
+  <h4><span class="num">4</span> Developer Productivity with Claude</h4>
+  <p>An agent helping engineers explore unfamiliar codebases, understand legacy systems, generate boilerplate and automate repetitive tasks — built-in tools (Read, Write, Bash, Grep, Glob) plus MCP servers.</p>
+  <p class="note"><b>Carries:</b> D2 Tool Design &amp; MCP · D3 Claude Code Config · D1 Agentic Architecture</p>
+
+  <h4><span class="num">5</span> Claude Code for Continuous Integration</h4>
+  <p>Claude Code inside CI/CD: automated code review, test generation and PR feedback — with prompts that minimise false positives.</p>
+  <p class="note"><b>Carries:</b> D3 Claude Code Config · D4 Prompt Engineering &amp; Structured Output</p>
+
+  <h4><span class="num">6</span> Structured Data Extraction</h4>
+  <p>Extraction from unstructured documents, JSON-schema validation, high accuracy, graceful edge cases, downstream integration.</p>
+  <p class="note"><b>Carries:</b> D4 Prompt Engineering &amp; Structured Output · D5 Context &amp; Reliability</p>
+
+  <div class="take"><b>Overlap pattern worth knowing:</b> D1/D2/D5 cluster around the two agentic scenarios (1 and 3); D3 appears in four of six; D4 concentrates in the CI and extraction scenarios. Weak domain → drill the scenarios that carry it.</div>
+</section>
+
+<section id="b">
+  <h2>B · The four official preparation exercises</h2>
+  <p class="note">From the guide's preparation section — hands-on reps the certification authors recommend.</p>
+  <h4><span class="num">1</span> Multi-tool agent with escalation logic</h4>
+  <p>3–4 MCP tools with differentiating descriptions (two deliberately similar); agentic loop keyed on <code>stop_reason</code>; structured errors (<code>errorCategory</code>, <code>isRetryable</code>); a programmatic hook enforcing a business rule; multi-concern test messages. <span class="note">D1 · D2 · D5</span></p>
+  <h4><span class="num">2</span> Configure Claude Code for a team workflow</h4>
+  <p>Project CLAUDE.md; <code>.claude/rules/</code> with glob frontmatter; a skill with <code>context: fork</code> + <code>allowed-tools</code>; MCP server in <code>.mcp.json</code> with env expansion plus a personal one; compare plan mode vs direct across three task complexities. <span class="note">D3 · D2</span></p>
+  <h4><span class="num">3</span> Structured data extraction pipeline</h4>
+  <p>JSON schema with required/optional/nullable fields and an <code>"other"</code>+detail enum; validation-retry loop; few-shot examples across varied formats; batch submission with <code>custom_id</code> failure handling; field-level confidence routing. <span class="note">D4 · D5</span></p>
+  <h4><span class="num">4</span> Multi-agent research pipeline</h4>
+  <p>Coordinator with <code>Task</code> in <code>allowedTools</code>; findings passed in-prompt; parallel Task calls in one response; structured findings preserving attribution; simulated timeout with coverage annotations; conflicting sources kept side by side. <span class="note">D1 · D2 · D5</span></p>
+</section>
+
+<section id="c">
+  <h2>C · Six new practice use cases</h2>
+  <p class="note">Same worlds as the exam, fresh failure modes and decision points. Tap any question to reveal the key and the reasoning.</p>
+
+  <!-- ============ P1 ============ -->
+  <h4><span class="num">P1</span> Subscription billing disputes <span class="note">D1 · D2 · D5</span></h4>
+  <p><b>Context.</b> Your support agent handles cancellations, failed renewals and refund requests through <code>get_account</code>, <code>list_charges</code>, <code>issue_credit</code>, <code>escalate_to_human</code>. Instrumentation shows 18% of runs end with the agent <b>retrying</b> <code>issue_credit</code> after it returned <code>{"errorCategory":"business","isRetryable":false,"reason":"beyond 90-day window"}</code>. Handle time triples on those cases.</p>
+
+  <details class="q">
+    <summary>Q1 · multiple choice — reveal</summary>
+    <p class="qtext">Most effective fix for the retry behaviour?</p>
+    <ol class="opts" type="A">
+      <li>Raise the retry limit for <code>issue_credit</code> so transient blips are absorbed.</li>
+      <li>Instruct the agent in the system prompt to stop retrying after a failed credit.</li>
+      <li>Make the business-rule error self-describing in the recovery path: keep <code>isRetryable:false</code> in the result, and have the agent surface the reason to the customer while offering the policy-compliant alternative.</li>
+      <li>Remove <code>issue_credit</code> and route every refund through <code>escalate_to_human</code>.</li>
+    </ol>
+    <div class="ans"><b>Correct: C.</b> The tool already classifies the error correctly — the failure is that nothing in the agent's recovery policy <i>uses</i> the classification. A non-retryable business error should end that action and become a customer-facing explanation. A and B leave the loop probabilistic; D trades away the autonomy the design depends on.</div>
+  </details>
+
+  <details class="q">
+    <summary>Q2 · multiple choice — reveal</summary>
+    <p class="qtext">"Why was I charged twice?" calls <code>get_account</code>, but "cancel my plan" also calls <code>get_account</code> when it should call <code>list_charges</code>. Both descriptions read "Retrieves account billing information" / "Retrieves billing records". First step?</p>
+    <ol class="opts" type="A">
+      <li>Add five few-shot examples teaching the routing.</li>
+      <li>Rewrite both descriptions to state what each returns, the inputs it accepts, and when to use it instead of the other.</li>
+      <li>Merge them into one <code>billing_lookup</code> tool.</li>
+      <li>Add a keyword router that pre-selects the tool per request type.</li>
+    </ol>
+    <div class="ans"><b>Correct: B.</b> Descriptions are the primary selection mechanism; B is the proportionate root-cause fix. A adds tokens without fixing ambiguity, C is a valid architecture change but far more work than a "first step", D is over-engineering that bypasses the model's language understanding.</div>
+  </details>
+
+  <details class="q">
+    <summary>Q3 · multiple response (select two) — reveal</summary>
+    <p class="qtext">One message contains three concerns: a failed charge, a wrong address on file, and a cancellation request. Which two behaviours should the agent exhibit?</p>
+    <ol class="opts" type="A">
+      <li>Decompose the request, address each concern, then synthesise one unified reply.</li>
+      <li>Process concerns strictly in the order stated, escalating on the first that needs it.</li>
+      <li>Persist the transactional facts (charge IDs, amounts, dates, statuses) outside summarised history.</li>
+      <li>Ask the customer to resend each concern separately.</li>
+    </ol>
+    <div class="ans"><b>Correct: A, C.</b> Multi-concern decomposition plus a persistent case-facts block is exactly the D1/D5 pairing. B abandons the remaining concerns; D shifts work to the customer.</div>
+  </details>
+
+  <details class="q">
+    <summary>Q4 · multiple choice — reveal</summary>
+    <p class="qtext">A goodwill credit is requested that policy doesn't cover — policy addresses only documented service outages. Correct behaviour?</p>
+    <ol class="opts" type="A">
+      <li>Escalate immediately, because policy is silent on the request.</li>
+      <li>Approve it, since the customer's frustration is evident.</li>
+      <li>Decline and close the conversation.</li>
+      <li>Offer an unrelated discount to avoid escalation.</li>
+    </ol>
+    <div class="ans"><b>Correct: A.</b> Policy gaps are an explicit escalation trigger. B and D invent policy; C is a dead end when a human could decide.</div>
+  </details>
+
+  <div class="repo"><b>Lab P1.</b> Four tools with differentiating descriptions, structured errors carrying <code>errorCategory</code> + <code>isRetryable</code>, a programmatic gate blocking <code>issue_credit</code> until <code>get_account</code> returns a verified ID, and a recovery policy mapping each error class to retry / explain / escalate. <b>Done when:</b> a non-retryable business error produces one customer-facing explanation and zero retries; multi-concern tickets get one synthesised reply.</div>
+
+  <!-- ============ P2 ============ -->
+  <h4><span class="num">P2</span> Onboarding a legacy Java monolith <span class="note">D3 · D5</span></h4>
+  <p><b>Context.</b> A new engineer must understand a 12-year-old monolith: mixed conventions, tests scattered beside sources. You're setting up Claude Code to help — but analysis runs flood the main session, and by the third run Claude answers about "typical service patterns" instead of this codebase's actual classes.</p>
+
+  <details class="q">
+    <summary>Q1 · multiple choice — reveal</summary>
+    <p class="qtext">Which change addresses the context degradation directly?</p>
+    <ol class="opts" type="A">
+      <li>Add <code>context: fork</code> to the analysis skill so it runs isolated and returns only its summary.</li>
+      <li>Instruct the skill to summarise its output more tersely.</li>
+      <li>Run <code>/compact</code> after each analysis.</li>
+      <li>Move the skill to the personal <code>~/.claude/skills/</code> directory.</li>
+    </ol>
+    <div class="ans"><b>Correct: A.</b> Isolation is the designed mechanism for keeping verbose exploration out of the main conversation. B still lands a long report; C treats symptoms after pollution; D changes scope, not isolation.</div>
+  </details>
+
+  <details class="q">
+    <summary>Q2 · multiple choice — reveal</summary>
+    <p class="qtext">Tests live beside sources throughout the tree and must follow one house style. How do you make Claude apply test conventions wherever it generates tests?</p>
+    <ol class="opts" type="A">
+      <li>Put the conventions in the root CLAUDE.md and rely on inference.</li>
+      <li>Add a <code>.claude/rules/</code> file with frontmatter <code>paths: ["**/*.test.*"]</code>.</li>
+      <li>Create one skill per code area containing its conventions.</li>
+      <li>Add a CLAUDE.md in every subdirectory.</li>
+    </ol>
+    <div class="ans"><b>Correct: B.</b> Glob-scoped rules load by path regardless of directory — the maintainable answer for cross-cutting conventions. A is unreliable inference; C needs manual invocation; D is unmaintainable across many directories.</div>
+  </details>
+
+  <details class="q">
+    <summary>Q3 · multiple response (select two) — reveal</summary>
+    <p class="qtext">One engineer wants the whole codebase read upfront; another wants incremental exploration. Which two techniques belong in the workflow?</p>
+    <ol class="opts" type="A">
+      <li>Grep for entry points and trace imports outward rather than reading everything.</li>
+      <li>Keep a scratchpad file recording key findings across sessions.</li>
+      <li>Cache the full source tree in the prompt for the session.</li>
+      <li>Disable subagents so all context stays in one conversation.</li>
+    </ol>
+    <div class="ans"><b>Correct: A, B.</b> Incremental tracing plus durable scratch notes is the D5 pattern for large codebases. C exhausts the budget and triggers lost-in-the-middle; D removes the isolation that keeps the main session clean.</div>
+  </details>
+
+  <details class="q">
+    <summary>Q4 · multiple choice — reveal</summary>
+    <p class="qtext">One module must be restructured; service boundaries are unclear and dozens of files are affected. Approach?</p>
+    <ol class="opts" type="A">
+      <li>Plan mode first: explore, map dependencies, design the boundary before editing.</li>
+      <li>Direct execution, letting boundaries emerge as you edit.</li>
+      <li>Direct execution with a fully pre-written per-file specification.</li>
+      <li>Start direct and switch to plan mode only if problems appear.</li>
+    </ol>
+    <div class="ans"><b>Correct: A.</b> Architectural, multi-file, multiple valid approaches = plan mode. B discovers dependencies too late; C presumes the answer; D ignores stated complexity.</div>
+  </details>
+
+  <div class="repo"><b>Lab P2.</b> Project CLAUDE.md, two rule files with glob frontmatter, one <code>context: fork</code> skill with <code>allowed-tools</code> limits, and a scratchpad convention. <b>Done when:</b> rules load only for matching paths, the skill's output never enters the main session, and a second session resumes from the scratchpad alone.</div>
+
+  <!-- ============ P3 ============ -->
+  <h4><span class="num">P3</span> Regulatory compliance research <span class="note">D1 · D2 · D5</span></h4>
+  <p><b>Context.</b> A coordinator delegates to search, document-analysis and synthesis subagents for a regulator-facing briefing. A subagent timed out; two credible sources disagree on a key figure; the synthesis must be auditable.</p>
+
+  <details class="q">
+    <summary>Q1 · multiple choice — reveal</summary>
+    <p class="qtext">Synthesis needs simple fact-checks (dates, names) mid-pass but round-trips through the coordinator for each — +40% latency. Best fix?</p>
+    <ol class="opts" type="A">
+      <li>Give synthesis a scoped <code>verify_fact</code> tool for simple lookups; complex checks still route via the coordinator.</li>
+      <li>Have synthesis batch all checks to the end of the pass.</li>
+      <li>Give synthesis full web-search capability.</li>
+      <li>Have the search agent pre-cache speculative context around every source.</li>
+    </ol>
+    <div class="ans"><b>Correct: A.</b> Least privilege for the high-frequency case, coordination preserved for the complex remainder. B creates blocking dependencies; C breaks separation of concerns; D guesses at unknown future needs.</div>
+  </details>
+
+  <details class="q">
+    <summary>Q2 · multiple choice — reveal</summary>
+    <p class="qtext">The document-analysis subagent times out. What should the coordinator receive?</p>
+    <ol class="opts" type="A">
+      <li>A generic "search unavailable" status.</li>
+      <li>An empty result marked successful.</li>
+      <li>Structured error context: failure type, attempted query, partial results, alternative approaches.</li>
+      <li>A propagated exception that terminates the run.</li>
+    </ol>
+    <div class="ans"><b>Correct: C.</b> Structured context is what enables intelligent recovery — retry differently, route around, or proceed with annotated gaps. A hides the signal, B suppresses it, D aborts work that was recoverable.</div>
+  </details>
+
+  <details class="q">
+    <summary>Q3 · multiple response (select two) — reveal</summary>
+    <p class="qtext">Two credible sources give different figures for the same statistic. The synthesis output must…</p>
+    <ol class="opts" type="A">
+      <li>Preserve both values with source attribution.</li>
+      <li>Distinguish well-established findings from contested ones.</li>
+      <li>Average the two values into a single number.</li>
+      <li>Drop the statistic to avoid ambiguity.</li>
+    </ol>
+    <div class="ans"><b>Correct: A, B.</b> Conflicting evidence is preserved and labelled, never silently resolved — the auditability requirement. C invents a number; D deletes information the reader needs.</div>
+  </details>
+
+  <details class="q">
+    <summary>Q4 · multiple choice — reveal</summary>
+    <p class="qtext">Subagents keep duplicating research. Root cause and fix?</p>
+    <ol class="opts" type="A">
+      <li>The coordinator's decomposition is too broad — narrow the subtopic partitioning per subagent.</li>
+      <li>The search agent's queries are too short — lengthen them.</li>
+      <li>The synthesis agent lacks deduplication instructions.</li>
+      <li>The subagents share memory and overwrite each other.</li>
+    </ol>
+    <div class="ans"><b>Correct: A.</b> Duplication is an assignment problem at the coordinator. B and C treat downstream symptoms; D is false — subagents don't share context.</div>
+  </details>
+
+  <div class="repo"><b>Lab P3.</b> Coordinator with <code>Task</code> in <code>allowedTools</code>, findings passed in-prompt, two parallel Task calls in one response, structured findings (<code>claim</code>, <code>evidence</code>, <code>source</code>, <code>date</code>), one simulated timeout, one conflicting-source case. <b>Done when:</b> citations survive synthesis, the timed-out section is annotated as a coverage gap, and both conflicting figures appear with attribution.</div>
+
+  <!-- ============ P4 ============ -->
+  <h4><span class="num">P4</span> Internal code-search assistant <span class="note">D2 · D3 · D1</span></h4>
+  <p><b>Context.</b> Engineers ask an agent to find files, trace symbols and explain modules across a monorepo. It has 19 tools, including <code>search_code</code> and <code>find_files</code> with overlapping descriptions — and a report-writing agent that keeps trying to run searches itself.</p>
+
+  <details class="q">
+    <summary>Q1 · multiple choice — reveal</summary>
+    <p class="qtext">Tool selection is erratic. Which change helps most?</p>
+    <ol class="opts" type="A">
+      <li>Add more tools so every phrasing has a match.</li>
+      <li>Cut to the role's essential tools (~4–5) and rewrite descriptions to state inputs, outputs and boundaries.</li>
+      <li>Raise the model tier.</li>
+      <li>Add a keyword pre-router.</li>
+    </ol>
+    <div class="ans"><b>Correct: B.</b> Selection reliability degrades with tool count; descriptions and scoping are the levers. A makes it worse; C doesn't fix ambiguity; D bypasses the model's language understanding.</div>
+  </details>
+
+  <details class="q">
+    <summary>Q2 · multiple choice — reveal</summary>
+    <p class="qtext">Which built-in tool finds all call sites of <code>parseInvoice</code>?</p>
+    <ol class="opts" type="A">
+      <li>Glob — it matches names across directories.</li>
+      <li>Grep — content search across the tree.</li>
+      <li>Read — load each candidate file.</li>
+      <li>Bash <code>ls -R</code>.</li>
+    </ol>
+    <div class="ans"><b>Correct: B.</b> Grep searches content (symbols, strings); Glob matches paths. A confuses the two; C and D don't search content.</div>
+  </details>
+
+  <details class="q">
+    <summary>Q3 · multiple response (select two) — reveal</summary>
+    <p class="qtext">Which two design moves respect the report-writing agent's role?</p>
+    <ol class="opts" type="A">
+      <li>Restrict its toolset to retrieval and formatting tools.</li>
+      <li>Give it one scoped cross-role tool (<code>verify_fact</code>) for high-frequency needs.</li>
+      <li>Grant it the full search toolset for convenience.</li>
+      <li>Let it bypass the coordinator when it needs more data.</li>
+    </ol>
+    <div class="ans"><b>Correct: A, B.</b> Scoped access plus one narrow, high-frequency exception. C and D destroy the specialisation that made it reliable.</div>
+  </details>
+
+  <details class="q">
+    <summary>Q4 · multiple choice — reveal</summary>
+    <p class="qtext">Exploratory questions trigger dozens of searches; the session becomes slow and vague. Best structural response?</p>
+    <ol class="opts" type="A">
+      <li>Delegate verbose exploration to subagents that return summaries.</li>
+      <li>Increase the model's context window.</li>
+      <li>Ask engineers to phrase questions more precisely.</li>
+      <li>Disable search for complex questions.</li>
+    </ol>
+    <div class="ans"><b>Correct: A.</b> Isolation keeps the main session lean and specific — the same mechanism as <code>context: fork</code>. B doesn't fix attention quality; C shifts burden; D removes the capability.</div>
+  </details>
+
+  <div class="repo"><b>Lab P4.</b> Cut 19 tools to 5 with rewritten descriptions; replace generic <code>fetch_url</code> with a validating <code>load_document</code>; add one scoped cross-role tool. <b>Done when:</b> ambiguous requests route correctly in a 10-case spot check, and exploration leaves the main session citing real symbol names, not generic patterns.</div>
+
+  <!-- ============ P5 ============ -->
+  <h4><span class="num">P5</span> Flaky-test triage in CI <span class="note">D3 · D4</span></h4>
+  <p><b>Context.</b> A CI job asks Claude to review each PR for risky changes and generate missing tests. It hangs in the pipeline, floods PRs with style nitpicks, and re-reports the same issues on every push.</p>
+
+  <details class="q">
+    <summary>Q1 · multiple choice — reveal</summary>
+    <p class="qtext">The job hangs waiting for input. Correct invocation?</p>
+    <ol class="opts" type="A">
+      <li><code>claude -p "…"</code> — print/non-interactive mode.</li>
+      <li>Export <code>CLAUDE_HEADLESS=true</code>.</li>
+      <li>Redirect stdin from <code>/dev/null</code>.</li>
+      <li><code>claude --batch "…"</code>.</li>
+    </ol>
+    <div class="ans"><b>Correct: A.</b> <code>-p</code> is the documented non-interactive mode: process, print, exit. B and D name non-existent features; C is a Unix workaround that doesn't address the CLI contract.</div>
+  </details>
+
+  <details class="q">
+    <summary>Q2 · multiple choice — reveal</summary>
+    <p class="qtext">Findings must post as inline comments. Which combination produces machine-parseable output?</p>
+    <ol class="opts" type="A">
+      <li><code>--output-format json</code> with <code>--json-schema</code>.</li>
+      <li>A firm instruction to "reply only with JSON".</li>
+      <li>Markdown tables parsed with regex.</li>
+      <li>Two passes with a self-check between them.</li>
+    </ol>
+    <div class="ans"><b>Correct: A.</b> Schema-enforced output is the reliable mechanism. B is probabilistic syntax; C is brittle parsing of prose; D doubles cost without guaranteeing shape.</div>
+  </details>
+
+  <details class="q">
+    <summary>Q3 · multiple response (select two) — reveal</summary>
+    <p class="qtext">Reviewers lose trust at 60% precision. Which two changes raise precision most directly?</p>
+    <ol class="opts" type="A">
+      <li>Replace "report high-confidence issues" with categorical criteria for what to report and skip.</li>
+      <li>Temporarily disable the noisiest category while its prompt is reworked.</li>
+      <li>Add an instruction to "be conservative".</li>
+      <li>Raise the temperature.</li>
+    </ol>
+    <div class="ans"><b>Correct: A, B.</b> Explicit categories, plus quarantining a noisy class while you fix it, restore trust and target the cause. C is a mood, not criteria — it measurably fails; D raises variance.</div>
+  </details>
+
+  <details class="q">
+    <summary>Q4 · multiple choice — reveal</summary>
+    <p class="qtext">A 14-file PR gets inconsistent reviews — deep on some files, contradictory across identical patterns. Restructure how?</p>
+    <ol class="opts" type="A">
+      <li>Per-file local passes plus a separate cross-file integration pass.</li>
+      <li>Require engineers to split the PR.</li>
+      <li>Use a larger context window on one pass.</li>
+      <li>Run three passes and keep only findings that appear twice.</li>
+    </ol>
+    <div class="ans"><b>Correct: A.</b> Focused passes fix attention dilution; the integration pass catches cross-file issues. B shifts burden; C confuses window size with attention quality; D suppresses real but intermittent findings.</div>
+  </details>
+
+  <div class="repo"><b>Lab P5.</b> CI review job with <code>-p</code>, <code>--output-format json</code> + schema for <code>{file, line, severity, issue, suggested_fix}</code>, categorical review criteria, and prior-findings context so re-runs report only new or unaddressed items. <b>Done when:</b> the job exits with no input wait, output parses without post-processing, and a second run on the same commit posts no duplicates.</div>
+
+  <!-- ============ P6 ============ -->
+  <h4><span class="num">P6</span> Insurance claim document extraction <span class="note">D4 · D5</span></h4>
+  <p><b>Context.</b> A pipeline processes thousands of claim documents into a downstream system. Fields are sometimes absent; a 1,200-document batch runs nightly; totals must reconcile; low-confidence extractions go to human review.</p>
+
+  <details class="q">
+    <summary>Q1 · multiple choice — reveal</summary>
+    <p class="qtext">Required schema fields cause the model to invent values when the document lacks the data. Best fix?</p>
+    <ol class="opts" type="A">
+      <li>Add "if unknown, leave blank" to the prompt.</li>
+      <li>Mark such fields optional/nullable in the schema and permit null.</li>
+      <li>Lower the temperature.</li>
+      <li>Retry until the field appears.</li>
+    </ol>
+    <div class="ans"><b>Correct: B.</b> Nullability in the schema is the structural fix; a prompt request fights the required-field signal. C doesn't change schema pressure; D fabricates faster.</div>
+  </details>
+
+  <details class="q">
+    <summary>Q2 · multiple choice — reveal</summary>
+    <p class="qtext">Line items must sum to the stated total. Schema validation passes but the numbers don't reconcile. Which mechanism catches this?</p>
+    <ol class="opts" type="A">
+      <li>Tighten the JSON schema further.</li>
+      <li>Semantic validation: extract <code>calculated_total</code> alongside <code>stated_total</code> and flag mismatches.</li>
+      <li>Add more few-shot examples.</li>
+      <li>Increase max output tokens.</li>
+    </ol>
+    <div class="ans"><b>Correct: B.</b> Strict schemas eliminate syntax errors, not semantic ones — reconciliation is a validation-layer job. A can't express arithmetic; C and D don't check anything.</div>
+  </details>
+
+  <details class="q">
+    <summary>Q3 · multiple response (select two) — reveal</summary>
+    <p class="qtext">Which two retry designs are sound?</p>
+    <ol class="opts" type="A">
+      <li>On validation failure, resend the document + failed extraction + the specific error.</li>
+      <li>Retry when the required fact exists only in an external document not provided.</li>
+      <li>Mark fields like <code>"unclear"</code> / <code>"other" + detail</code> so ambiguity is representable.</li>
+      <li>Raise the batch size to absorb the failure rate.</li>
+    </ol>
+    <div class="ans"><b>Correct: A, C.</b> Targeted error feedback plus representable ambiguity. B cannot succeed by construction; D multiplies cost without improving extraction.</div>
+  </details>
+
+  <details class="q">
+    <summary>Q4 · multiple choice — reveal</summary>
+    <p class="qtext">The nightly batch of 1,200 documents must finish before the morning shift; a dozen fail. Best handling?</p>
+    <ol class="opts" type="A">
+      <li>Correlate by <code>custom_id</code>, resubmit only the failures (chunking anything that exceeded limits).</li>
+      <li>Resubmit the whole batch.</li>
+      <li>Switch everything to synchronous calls.</li>
+      <li>Drop the failures and reconcile later.</li>
+    </ol>
+    <div class="ans"><b>Correct: A.</b> <code>custom_id</code> exists for exactly this; targeted resubmission preserves the 50% batch saving. B wastes the window; C abandons batch economics; D corrupts downstream totals.</div>
+  </details>
+
+  <div class="repo"><b>Lab P6.</b> Extraction tool with a schema (required, optional, nullable, <code>"other"</code>+detail, <code>"unclear"</code>), validation-retry with error feedback, <code>calculated_total</code> vs <code>stated_total</code> reconciliation, batch <code>custom_id</code> failure handling, field-level confidence routing. <b>Done when:</b> missing fields yield null rather than invention; a deliberate total mismatch is flagged; a failed subset is resubmitted and reconciled without reprocessing successes.</div>
+</section>
+
+<section id="d">
+  <h2>D · Coverage matrix — where to drill</h2>
+  <table class="idx" style="width:100%;border-collapse:collapse;font-size:.85rem">
+    <tr><td><b>Domain</b></td><td><b>Weight</b></td><td><b>Scenarios</b></td><td><b>Practice</b></td></tr>
+    <tr><td>D1 Agentic Architecture &amp; Orchestration</td><td>27%</td><td>1, 3, 4</td><td>P1, P3, P4</td></tr>
+    <tr><td>D3 Claude Code Configuration &amp; Workflows</td><td>20%</td><td>2, 4, 5</td><td>P2, P4, P5</td></tr>
+    <tr><td>D4 Prompt Engineering &amp; Structured Output</td><td>20%</td><td>5, 6</td><td>P5, P6</td></tr>
+    <tr><td>D2 Tool Design &amp; MCP Integration</td><td>18%</td><td>1, 3, 4</td><td>P1, P3, P4</td></tr>
+    <tr><td>D5 Context Management &amp; Reliability</td><td>15%</td><td>1, 2, 3, 6</td><td>P2, P3, P6</td></tr>
+  </table>
+  <div class="take"><b>Routing rule:</b> your score report gives percent-correct by domain. Weak domain → do that row's practice units before anything else. D1 errors cost the most at 27%.</div>
+</section>
+
+<section id="e">
+  <h2>E · Readiness checklist</h2>
+  <ul class="chk">
+    <li>I can state the agentic loop's termination condition and name three tested anti-patterns.</li>
+    <li>I can explain why deterministic ordering needs programmatic gates, not prompt instructions.</li>
+    <li>I can describe subagent context isolation and how the coordinator must compensate.</li>
+    <li>I can classify a tool error as transient / validation / business / permission and say whether it's retryable.</li>
+    <li>I can choose between <code>tool_choice: auto | any | forced</code> with a reason.</li>
+    <li>I can place a convention correctly across CLAUDE.md levels, <code>.claude/rules/</code> and skills — and say when each loads.</li>
+    <li>I can pick plan mode vs direct execution for a described task and justify it.</li>
+    <li>I can write a JSON schema with nullable and enum-"other" patterns, and say what it does <i>not</i> protect against.</li>
+    <li>I can describe when retry-with-feedback works and when it cannot.</li>
+    <li>I can list the Batch API's economics and its hard constraint on tool use.</li>
+    <li>I can name the legitimate escalation triggers — and the two unreliable proxies.</li>
+    <li>I can explain why an access failure isn't an empty result, and why both must be distinguishable.</li>
+  </ul>
+  <p class="note">Score yourself honestly; anything unticked is your next practice unit.</p>
+</section>
+
+<footer>Official material: CCAR-F Exam Guide v1.0. Practice cases P1–P6 written 2026-10-16 by the workspace agent · not endorsed by Anthropic.<br>Companion: <a href="index.html">study guide hub</a> · <a href="ccar-f-complete.md">single-file guide</a></footer>
+
+</div>
+</body>
+</html>
